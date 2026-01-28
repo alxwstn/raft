@@ -1,0 +1,12 @@
+    pre_raft_sheet_link = https://docs.google.com/spreadsheets/d/1dwl1EsjuQ7B04bK4tH0kMjJPtPLYtxor
+    post_raft_sheet_link = https://docs.google.com/spreadsheets/d/1Vgc2NtAYlBpqdZaObfyqnfeX86eHgnzo/edit?usp=drive_link&ouid=109842652416746543598&rtpof=true&sd=true
+    longitude_cutoff_sd_active_encampments = -117.0054234
+    longitude_cutoff_sd_inactive_encampments = -117.0054234
+    longitude_cutoff_sd_all_sources = -117.0054234
+    current_raft_date = 2026-01-16
+    last_raft_date = 2026-01-14
+    SCOPES = https://www.googleapis.com/auth/drive.readonly
+    CREDENTIALS_FILE = credentials.json
+    TOKEN_FILE = token.json
+[raft]
+    # provide overrides to the defaults here

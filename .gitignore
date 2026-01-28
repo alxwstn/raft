@@ -1,0 +1,11 @@
+credentials.json
+token.json
+config.ini
+venv/*
+output/*
+test/test_files/*
+__pycache__/*
+
+# keep
+!output/.gitkeep
+!test/test_files/.gitkeep

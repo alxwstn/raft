@@ -1,0 +1,111 @@
+import io
+import os
+import pandas as pd
+from googleapiclient.discovery import build
+from googleapiclient.http import MediaIoBaseDownload
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from google.oauth2.credentials import Credentials
+from config import config
+
+# There is a better way to do this
+preraft_df: pd.DataFrame = None
+postraft_df: pd.DataFrame = None
+def get_preraft_df():
+    # preraft_df
+    return preraft_df
+
+def get_postraft_df():
+    # preraft_df
+    return postraft_df
+
+def authenticate():
+    creds = None
+
+    if os.path.exists(config['TOKEN_FILE']):
+        creds = Credentials.from_authorized_user_file(config['TOKEN_FILE'], [config['SCOPES']])
+
+    if not creds or not creds.valid:
+        if creds and creds.expired and creds.refresh_token:
+            creds.refresh(Request())
+        else:
+            flow = InstalledAppFlow.from_client_secrets_file(
+                config['CREDENTIALS_FILE'], [config['SCOPES']]
+            )
+            creds = flow.run_local_server(port=0)
+
+        with open(config['TOKEN_FILE'], "w") as token:
+            token.write(creds.to_json())
+
+    return creds
+
+def extract_file_id(google_sheet_url: str) -> str:
+    """
+    Extracts the file ID from a Google Sheets URL
+    """
+    return google_sheet_url.split("/d/")[1].split("/")[0]
+
+def download_xlsx(file_id: str, creds) -> bytes:
+    service = build("drive", "v3", credentials=creds)
+
+    request = service.files().get_media(fileId=file_id)
+    fh = io.BytesIO()
+
+    downloader = MediaIoBaseDownload(fh, request)
+    done = False
+
+    while not done:
+        _, done = downloader.next_chunk()
+
+    fh.seek(0)
+    return fh.read()
+
+
+def fetch_spreadsheet(google_sheet_link):
+    creds = authenticate()
+    file_id = extract_file_id(google_sheet_link)
+
+    xlsx_data = download_xlsx(file_id, creds)
+    return xlsx_data
+
+def save_test_spreadsheets():
+    xlsx = fetch_spreadsheet(config['pre_raft_sheet_link'])
+    df = pd.read_excel(io.BytesIO(xlsx))
+    with pd.ExcelWriter("test/test_files/temp_preraft.xlsx") as writer:
+        df.to_excel(writer)
+    
+    xlsx = fetch_spreadsheet(config['post_raft_sheet_link'])
+    df = pd.read_excel(io.BytesIO(xlsx))
+    with pd.ExcelWriter("test/test_files/temp_postraft.xlsx") as writer:
+        df.to_excel(writer)
+
+
+    print ("Done saving test spreadsheets")
+
+def load_test_spreadsheets():
+    global preraft_df
+    preraft_df = pd.read_excel("test/test_files/temp_preraft.xlsx")
+    global postraft_df
+    postraft_df = pd.read_excel("test/test_files/temp_postraft.xlsx")
+
+
+def load_spreadsheet_to_df(google_sheet_link, creds):
+    file_id = extract_file_id(google_sheet_link)
+    xlsx_data = download_xlsx(file_id, creds)
+    return pd.read_excel(io.BytesIO(xlsx_data))
+
+def  pull_raft_spreadsheets():
+    creds = authenticate()
+    # this is clumsy. Python rustiness showing through!
+    global preraft_df
+    preraft_df = load_spreadsheet_to_df(config['pre_raft_sheet_link'], creds)
+    global postraft_df
+    postraft_df = load_spreadsheet_to_df(config['post_raft_sheet_link'], creds)
+
+def load_dfs(is_test):
+    if is_test:
+        load_test_spreadsheets()
+    else:
+        pull_raft_spreadsheets()
+
+
