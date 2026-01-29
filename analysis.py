@@ -45,7 +45,8 @@ def generate_df_whiteboard_vals(df, output_func):
     all_source_cells = get_whiteboard_bags_lbs(df[df['Category'].isin(all_sources_categories)])
     return enc_cells + inact_cells + all_source_cells
 
-# main function that generates the csv representation of the whiteboard r
+# generate the a list of strings
+# that represents the raft whiteboard row
 def generate_whiteboard_output():
     df = get_postraft_df()
     # filter to San Diego (longitudes smaller than/west of the Santee longitude cutoff)
@@ -57,8 +58,10 @@ def generate_whiteboard_output():
                         + generate_df_whiteboard_vals(st_df, get_whiteboard_triplet)
                         + generate_df_whiteboard_vals(df, get_whiteboard_doublet)
     )
-    return ','.join([date_name_cell_val()] + [str(x) for x in whiteboard_output])
+    return [date_name_cell_val()] + [str(x) for x in whiteboard_output]
 
+# generate the a list of strings
+# that represents the percent tracking row
 def generate_percent_tracking():
     df = get_postraft_df()
     all_source_df = df[df['Category'].isin(all_sources_categories)]
@@ -84,14 +87,14 @@ def generate_percent_tracking():
         litt_lbs,
         strm_lbs
     ]
-    return ','.join([date_name_cell_val()] + [str(x) for x in percent_tracking_output])
+    return [date_name_cell_val()] + [str(x) for x in percent_tracking_output]
 
 # team tracking constants
 raft_users = ["raftintern", "RAFT1", "Raftintern", "trashcave"]
 team_tracking_placeholders =["Location","Jurisdiction", "Ownership", "District", "# Vol","Event Length", "Vol Hrs", "Volunteer Names"]
 							
-# generate the comma-seperated representation of the team
-# tracking row
+# generate the a list of strings
+# that represents the team tracking row
 def generate_team_tracking():
     pre_df = get_preraft_df()
     post_df = get_postraft_df()
@@ -103,7 +106,7 @@ def generate_team_tracking():
         get_whiteboard_doublet(post_df.query('Category in @all_sources_categories'))[1]
     ]
     since_last_raft = get_whiteboard_triplet(post_df[post_df['reg_datetime'] > get_last_raft_date()])
-    return  ','.join(['Event #', date_name_cell_val()] + team_tracking_placeholders + [str(x) for x in (todays_raft + grand_total_trash + since_last_raft)])
+    return  ['Event #', date_name_cell_val()] + team_tracking_placeholders + [str(x) for x in (todays_raft + grand_total_trash + since_last_raft)]
 
 # aggregates and returns whiteboard totals, percent tracking, and team tracking spreadsheet rows
 # as comma-separated strings

@@ -1,6 +1,78 @@
 <!doctype html>
 <html>
   <body>
-    <h1>Hello {{ name }}!</h1>
+    <h1>RAFT Analysis {{config['current_raft_date']}}</h1>
+    <section>
+      <h2>Configuration Settings</h2>
+      <ul>
+        <li>
+          <strong>Pre-RAFT spreadsheet:</strong>
+          <a href="{{ config['pre_raft_sheet_link'] }}">
+            {{ config['pre_raft_sheet_link'] }}
+          </a>
+        </li>
+        <li>
+          <strong>Post-RAFT spreadsheet:</strong>
+          <a href="{{ config['post_raft_sheet_link'] }}">
+            {{ config['post_raft_sheet_link'] }}
+          </a>
+        </li>
+        <li>
+          <strong>Longitude cutoff (SD, active encampments):</strong>
+          {{ config['longitude_cutoff_sd_active_encampments'] }}
+        </li>
+        <li>
+          <strong>Longitude cutoff (SD, inactive encampments):</strong>
+          {{ config['longitude_cutoff_sd_inactive_encampments'] }}
+        </li>
+        <li>
+          <strong>Longitude cutoff (SD, all sources):</strong>
+          {{ config['longitude_cutoff_sd_all_sources'] }}
+          <span style="color: #666;">(west of “metal pipe”)</span>
+        </li>
+        <li>
+          <strong>Current RAFT date:</strong>
+          {{ config['current_raft_date'] }}
+        </li>
+        <li>
+          <strong>Last RAFT date:</strong>
+          {{ config['last_raft_date'] }}
+        </li>
+        <li>
+          <strong>Initials:</strong>
+          {{ config['initials'] }}
+        </li>
+      </ul>
+    </section>
+<!-- Whiteboard -->
+    <section class="sheet_section">
+      <h2><a href="https://docs.google.com/spreadsheets/d/1x8VjZrgu-04xsv4COKj0LBkQw-f1lZXSLPSgIM0f0vs">
+           Whiteboard Sheet</a>
+          <button onclick="copyToClipboard('whiteboard_table_row')">Copy</button>
+      </h2>
+      <pre id="whiteboard_table_row">{{whiteboard_row}}</pre>
+    </section>
+<!-- Percent Tracking -->
+    <section class="sheet_section">
+      <h2><a href="https://docs.google.com/spreadsheets/d/1x8VjZrgu-04xsv4COKj0LBkQw-f1lZXSLPSgIM0f0vs">
+           Percent Tracking Sheet</a>
+          <button onclick="copyToClipboard('percent_table_row')">Copy</button>
+      </h2>
+      <pre id="percent_table_row">{{percent_table_row}}</pre>
+    </section>
+<!-- Team Tracking -->
+    <section class="sheet_section">
+      <h2><a href="https://docs.google.com/spreadsheets/d/1b9MHwPwW-vvMQM66LHByMvYg92UaotbERcYq7n88kug/e">
+           Team Tracking Sheet</a>
+          <button onclick="copyToClipboard('team_table_row')">Copy</button>
+      </h2>
+      <pre id="team_table_row">{{team_table_row}}</pre>
+    </section>
+    <script>
+      function copyToClipboard(element_id) {
+        const text = document.getElementById(element_id).innerText;
+        navigator.clipboard.writeText(text);
+      }
+    </script>
   </body>
 </html>
