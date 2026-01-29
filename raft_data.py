@@ -7,6 +7,7 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from config import config
+import datetime
 
 # There is a better way to do this
 preraft_df: pd.DataFrame = None
@@ -18,6 +19,30 @@ def get_preraft_df():
 def get_postraft_df():
     # preraft_df
     return postraft_df
+
+# pandas df conversion things
+def convert_bags(x):
+    try:
+        return int(x)
+    except:
+        return 0
+    
+def convert_regdatetime(x):
+    return datetime.date.fromisoformat(x[0:10])
+
+dtype_map = {
+    'Longitude': float,
+    'Bags of Trash': int
+}
+
+converters_map = {
+    'Bags of Trash': convert_bags,
+    'reg_datetime': convert_regdatetime
+}
+# load the raft spreadsheet into a dataframe with the correct datatypes
+# see https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html#pandas.read_excel
+def load_raft_spreadsheet(reference):
+    return pd.read_excel(reference, dtype=dtype_map, converters=converters_map)
 
 def authenticate():
     creds = None
@@ -70,12 +95,12 @@ def fetch_spreadsheet(google_sheet_link):
 
 def save_test_spreadsheets():
     xlsx = fetch_spreadsheet(config['pre_raft_sheet_link'])
-    df = pd.read_excel(io.BytesIO(xlsx))
+    df = load_raft_spreadsheet(io.BytesIO(xlsx))
     with pd.ExcelWriter("test/test_files/temp_preraft.xlsx") as writer:
         df.to_excel(writer)
     
     xlsx = fetch_spreadsheet(config['post_raft_sheet_link'])
-    df = pd.read_excel(io.BytesIO(xlsx))
+    df = load_raft_spreadsheet(io.BytesIO(xlsx))
     with pd.ExcelWriter("test/test_files/temp_postraft.xlsx") as writer:
         df.to_excel(writer)
 
@@ -84,15 +109,15 @@ def save_test_spreadsheets():
 
 def load_test_spreadsheets():
     global preraft_df
-    preraft_df = pd.read_excel("test/test_files/temp_preraft.xlsx")
+    preraft_df = load_raft_spreadsheet("test/test_files/temp_preraft.xlsx")
     global postraft_df
-    postraft_df = pd.read_excel("test/test_files/temp_postraft.xlsx")
+    postraft_df = load_raft_spreadsheet("test/test_files/temp_postraft.xlsx")
 
 
 def load_spreadsheet_to_df(google_sheet_link, creds):
     file_id = extract_file_id(google_sheet_link)
     xlsx_data = download_xlsx(file_id, creds)
-    return pd.read_excel(io.BytesIO(xlsx_data))
+    return load_raft_spreadsheet(io.BytesIO(xlsx_data))
 
 def  pull_raft_spreadsheets():
     creds = authenticate()
