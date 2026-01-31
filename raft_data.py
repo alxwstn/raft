@@ -8,6 +8,10 @@ from google.auth.transport.requests import Request
 from google.oauth2.credentials import Credentials
 from config import config
 import datetime
+import olefile
+import xlrd
+import logging
+import sys
 
 # There is a better way to do this
 preraft_df: pd.DataFrame = None
@@ -40,8 +44,17 @@ converters_map = {
 }
 # load the raft spreadsheet into a dataframe with the correct datatypes
 # see https://pandas.pydata.org/docs/reference/api/pandas.read_excel.html#pandas.read_excel
-def load_raft_spreadsheet(reference):
-    return pd.read_excel(reference, dtype=dtype_map, converters=converters_map)
+def load_raft_spreadsheet(reference, info=''):
+    try:
+        return pd.read_excel(reference, dtype=dtype_map, converters=converters_map)
+    except xlrd.compdoc.CompDocError:
+        logging.warning('{}: Falling back to ole to handle Compound File Binary. See https://stackoverflow.com/a/60416081'.format(info))
+        ole = olefile.OleFileIO(reference)
+        if ole.exists('Workbook'):
+            d = ole.openstream('Workbook')
+            return pd.read_excel(d, engine='xlrd', dtype=dtype_map, converters=converters_map)
+    except Exception as e:
+        raise e
 
 def authenticate():
     creds = None
@@ -115,18 +128,30 @@ def load_test_spreadsheets():
     postraft_df = load_raft_spreadsheet("test/test_files/temp_postraft.xlsx")
 
 
-def load_spreadsheet_to_df(google_sheet_link, creds):
+def load_spreadsheet_to_df(google_sheet_link, creds, info=''):
     file_id = extract_file_id(google_sheet_link)
     xlsx_data = download_xlsx(file_id, creds)
-    return load_raft_spreadsheet(io.BytesIO(xlsx_data))
+    return load_raft_spreadsheet(io.BytesIO(xlsx_data), info=info)
 
 def  pull_raft_spreadsheets():
     creds = authenticate()
-    # this is clumsy. Python rustiness showing through!
-    global preraft_df
-    preraft_df = load_spreadsheet_to_df(config['pre_raft_sheet_link'], creds)
-    global postraft_df
-    postraft_df = load_spreadsheet_to_df(config['post_raft_sheet_link'], creds)
+    # this is global variable access is clumsy. Python rustiness showing through!
+    try:
+        global preraft_df
+        preraft_df = load_spreadsheet_to_df(config['pre_raft_sheet_link'], creds, info="preraft file")
+    except Exception as e:
+        logging.exception(e)
+        logging.critical('Unable to read pre-raft file from drive. Recommend fallback to local CSV')
+        sys.exit(1)
+    
+    try:
+        global postraft_df
+        postraft_df = load_spreadsheet_to_df(config['post_raft_sheet_link'], creds, info="preraft file")
+    except Exception as e:
+        logging.exception(e)
+        logging.critical('Unable to read post-raft file from drive. Recommend fallback to local CSV')
+        sys.exit(1)
+
 
 def load_dfs(is_test):
     if is_test:
