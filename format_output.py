@@ -1,7 +1,7 @@
 from jinja2 import Environment, FileSystemLoader
-from datetime import date
 from config import config
-import io
+import logging
+
 
 template_name = "RAFT_output_template.html"
 
@@ -16,16 +16,32 @@ def gen_preformatted_row(row_list):
 #         "whiteboard_tracking": List[str],
 #         "percent_tracking": List[str],
 #         "team_tracking": List[str]
+#         'team_tracking_debug_dfs': {
+#           'todays_raft_df': pandas.DataFrame,
+#           'grand_total_trash_before_raft_df': pandas.DataFrame,
+#           'grand_total_trash_after_raft_df': pandas.DataFrame,
+#           'since_last_raft_df': pandas.DataFrame
+#          }
 # }
 
 def format_raft_html(raft_spreadsheet_data):
     env = Environment(loader=FileSystemLoader("templates"))
     template = env.get_template(template_name)
+    team_today_raft_table_html = ''
+    team_since_last_raft_table_html = ''
+    try:
+        team_today_raft_table_html = raft_spreadsheet_data['team_tracking_debug_dfs']['todays_raft_df'][['Site Name ','Category','uid','reg_datetime','Bags of Trash']].to_html(table_id='team_today_raft')
+        team_since_last_raft_table_html = raft_spreadsheet_data['team_tracking_debug_dfs']['since_last_raft_df'][['Site Name ','Category','uid','reg_datetime','Bags of Trash']].to_html(table_id='team_since_last_raft')
+    except Exception as e:
+        logging.exception(e)
+        logging.warning('Failed to generate Team Tracking Detailed output. Manually recheck.')
 
     html = template. render(config = config,
                             whiteboard_row = gen_preformatted_row(raft_spreadsheet_data['whiteboard_tracking']),
                             percent_table_row = gen_preformatted_row(raft_spreadsheet_data['percent_tracking']),
-                            team_table_row = gen_preformatted_row(raft_spreadsheet_data['team_tracking'])
+                            team_table_row = gen_preformatted_row(raft_spreadsheet_data['team_tracking']),
+                            team_today_raft = team_today_raft_table_html,
+                            team_since_last_raft = team_since_last_raft_table_html
     )
     with open("output/RAFT_spreadsheet_analysis.html", "w") as f:
         f.write(html)

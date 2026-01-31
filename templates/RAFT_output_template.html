@@ -70,8 +70,32 @@
         margin-top: 0.5rem;
       }
 
-      .sheet_section h2 a {
+      .sheet_section h2 a,
+      .sheet_section h3 a {
         font-weight: 600;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 0.75rem;
+        font-size: 0.9rem;
+      }
+
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 0.4rem 0.6rem;
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f3f3f3;
+        font-weight: 600;
+      }
+
+      tr:nth-child(even) td {
+        background: #fafafa;
       }
     </style>
   </head>
@@ -155,6 +179,19 @@
       <pre id="team_table_row">{{ team_table_row }}</pre>
     </section>
 
+    <!-- Team Tracking Details-->
+    <section class="sheet_section">
+      <h2>
+        <a href="https://docs.google.com/spreadsheets/d/1M3K00YZpCy-a_Cs2l6GsncbVhttjCnvnHUOdgwb7_9I/edit?gid=1107748332#gid=1107748332">
+          Team Tracking Detailed Output
+        </a>
+      </h2>
+      <h3>Today's RAFT data <button onclick="copyToClipboard('team_today_raft')">Copy</button></h3>
+      {{team_today_raft |safe}}
+      <h3>Since last RAFT data <button onclick="copyToClipboard('team_since_last_raft')">Copy</button></h3>
+      {{team_since_last_raft |safe}}
+    </section>
+  
     <script>
       function copyToClipboard(element_id) {
         const text = document.getElementById(element_id).innerText;

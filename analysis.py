@@ -98,29 +98,47 @@ team_tracking_placeholders =["Location","Jurisdiction", "Ownership", "District",
 def generate_team_tracking():
     pre_df = get_preraft_df()
     post_df = get_postraft_df()
+
     # today's raft
-    post_df_raftusers = post_df.query('uid in @raft_users and Category in @all_sources_categories')
     curr_raft_date = get_current_raft_date()
-    todays_raft = get_whiteboard_triplet(post_df_raftusers.query('reg_datetime >= @curr_raft_date'))
+    todays_raft_df = post_df.query('uid in @raft_users and Category in @all_sources_categories and reg_datetime >= @curr_raft_date')
+    todays_raft = get_whiteboard_triplet(todays_raft_df)
     # grand totals
+    grand_total_trash_before_raft_df = pre_df.query('Category in @all_sources_categories')
+    grand_total_trash_after_raft_df = post_df.query('Category in @all_sources_categories')
     grand_total_trash = [
-        get_whiteboard_doublet(pre_df.query('Category in @all_sources_categories'))[1],
-        get_whiteboard_doublet(post_df.query('Category in @all_sources_categories'))[1]
+        get_whiteboard_doublet(grand_total_trash_before_raft_df)[1],
+        get_whiteboard_doublet(grand_total_trash_after_raft_df)[1]
     ]
     # since last raft
     last_raft_date = get_last_raft_date()
-    since_last_raft = get_whiteboard_triplet(post_df.query('reg_datetime > @last_raft_date and  Category in @all_sources_categories'))
-    return  (['Event #', date_name_cell_val()]
+    since_last_raft_df = post_df.query('reg_datetime > @last_raft_date and  Category in @all_sources_categories')
+    since_last_raft = get_whiteboard_triplet(since_last_raft_df)
+    # combine output into team tracking sheet order
+    team_tracking =  (['Event #', date_name_cell_val()]
              + team_tracking_placeholders
              + [str(x) for x in (todays_raft + grand_total_trash + since_last_raft)])
+    return {
+        'team_tracking': team_tracking,
+        'team_tracking_debug_dfs': {
+            'todays_raft_df': todays_raft_df,
+            'grand_total_trash_before_raft_df': grand_total_trash_before_raft_df,
+            'grand_total_trash_after_raft_df': grand_total_trash_after_raft_df,
+            'since_last_raft_df': since_last_raft_df
+        }
+    }
 
 # aggregates and returns whiteboard totals, percent tracking, and team tracking spreadsheet rows
 # as comma-separated strings
 def analyze():
     print("analyzing raft spreadsheet...")
+    team_tracking_results = generate_team_tracking()
     return {
         "whiteboard_tracking": generate_whiteboard_output(),
         "percent_tracking": generate_percent_tracking(),
-        "team_tracking": generate_team_tracking()
+        "team_tracking": team_tracking_results['team_tracking'],
+        # this is needed for team tracking splitting (not possible to automate without
+        # using GIS), and also this part in the process seems to be the most capricious one
+        "team_tracking_debug_dfs": team_tracking_results['team_tracking_debug_dfs']
     }
    
