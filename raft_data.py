@@ -12,6 +12,9 @@ import olefile
 import xlrd
 import logging
 import sys
+from enum import Enum
+
+DataSource = Enum('DataSource', [('LOCAL_EXCEL', 1), ('LOCAL_CSV', 2), ('DRIVE_EXCEL', 3)])
 
 # There is a better way to do this
 preraft_df: pd.DataFrame = None
@@ -55,6 +58,9 @@ def load_raft_spreadsheet(reference, info=''):
             return pd.read_excel(d, engine='xlrd', dtype=dtype_map, converters=converters_map)
     except Exception as e:
         raise e
+
+def load_raft_csv(filepath):
+    return pd.read_csv(filepath, dtype=dtype_map, converters=converters_map)
 
 def authenticate():
     creds = None
@@ -121,12 +127,6 @@ def save_test_spreadsheets():
 
     print ("Done saving test spreadsheets")
 
-def load_test_spreadsheets():
-    global preraft_df
-    preraft_df = load_raft_spreadsheet("test/test_files/temp_preraft.xlsx")
-    global postraft_df
-    postraft_df = load_raft_spreadsheet("test/test_files/temp_postraft.xlsx")
-
 
 def load_spreadsheet_to_df(google_sheet_link, creds, info=''):
     file_id = extract_file_id(google_sheet_link)
@@ -152,11 +152,25 @@ def  pull_raft_spreadsheets():
         logging.critical('Unable to read post-raft file from drive. Recommend fallback to local CSV')
         sys.exit(1)
 
+def load_local_spreadsheets():
+    global preraft_df
+    preraft_df = load_raft_spreadsheet("test/test_files/temp_preraft.xlsx")
+    global postraft_df
+    postraft_df = load_raft_spreadsheet("test/test_files/temp_postraft.xlsx")
 
-def load_dfs(is_test):
-    if is_test:
-        load_test_spreadsheets()
-    else:
-        pull_raft_spreadsheets()
+def load_local_csvs():
+    global preraft_df
+    preraft_df = load_raft_csv("test/test_files/csv_pre_file.csv")
+    global postraft_df
+    postraft_df = load_raft_csv("test/test_files/csv_post_file.csv")
+
+def load_dfs(source:DataSource):
+    match source:
+        case DataSource.DRIVE_EXCEL:
+            pull_raft_spreadsheets()
+        case DataSource.LOCAL_EXCEL:
+            load_local_spreadsheets()
+        case DataSource.LOCAL_CSV:
+            load_local_csvs()
 
 
