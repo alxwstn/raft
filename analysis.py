@@ -99,14 +99,20 @@ def generate_team_tracking():
     pre_df = get_preraft_df()
     post_df = get_postraft_df()
     # today's raft
-    post_df_raftusers = post_df.query('uid in @raft_users')
-    todays_raft = get_whiteboard_triplet(post_df_raftusers[post_df_raftusers['reg_datetime'] >= get_current_raft_date()])
+    post_df_raftusers = post_df.query('uid in @raft_users and Category in @all_sources_categories')
+    curr_raft_date = get_current_raft_date()
+    todays_raft = get_whiteboard_triplet(post_df_raftusers.query('reg_datetime >= @curr_raft_date'))
+    # grand totals
     grand_total_trash = [
         get_whiteboard_doublet(pre_df.query('Category in @all_sources_categories'))[1],
         get_whiteboard_doublet(post_df.query('Category in @all_sources_categories'))[1]
     ]
-    since_last_raft = get_whiteboard_triplet(post_df[post_df['reg_datetime'] > get_last_raft_date()])
-    return  ['Event #', date_name_cell_val()] + team_tracking_placeholders + [str(x) for x in (todays_raft + grand_total_trash + since_last_raft)]
+    # since last raft
+    last_raft_date = get_last_raft_date()
+    since_last_raft = get_whiteboard_triplet(post_df.query('reg_datetime > @last_raft_date and  Category in @all_sources_categories'))
+    return  (['Event #', date_name_cell_val()]
+             + team_tracking_placeholders
+             + [str(x) for x in (todays_raft + grand_total_trash + since_last_raft)])
 
 # aggregates and returns whiteboard totals, percent tracking, and team tracking spreadsheet rows
 # as comma-separated strings
