@@ -31,8 +31,7 @@ def convert_regdatetime(x):
     return datetime.date.fromisoformat(x[0:10])
 
 dtype_map = {
-    'Longitude': float,
-    'Bags of Trash': int
+    'Longitude': float
 }
 
 converters_map = {
@@ -93,14 +92,16 @@ def fetch_spreadsheet(google_sheet_link):
     xlsx_data = download_xlsx(file_id, creds)
     return xlsx_data
 
+# Save configured spreadsheets locally for testing
+# purposes
 def save_test_spreadsheets():
     xlsx = fetch_spreadsheet(config['pre_raft_sheet_link'])
-    df = load_raft_spreadsheet(io.BytesIO(xlsx))
+    df = pd.read_excel(io.BytesIO(xlsx))
     with pd.ExcelWriter("test/test_files/temp_preraft.xlsx") as writer:
         df.to_excel(writer)
     
     xlsx = fetch_spreadsheet(config['post_raft_sheet_link'])
-    df = load_raft_spreadsheet(io.BytesIO(xlsx))
+    df = pd.read_excel(io.BytesIO(xlsx))
     with pd.ExcelWriter("test/test_files/temp_postraft.xlsx") as writer:
         df.to_excel(writer)
 
