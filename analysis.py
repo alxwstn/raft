@@ -90,7 +90,8 @@ def generate_percent_tracking():
     return [date_name_cell_val()] + [str(x) for x in percent_tracking_output]
 
 # team tracking constants
-raft_users = ["raftintern", "RAFT1", "Raftintern", "trashcave"]
+raft_users_today = ["raftintern", "RAFT1", "Raftintern", "trashcave"]
+raft_users_last_Raft = ["raftintern", "RAFT1", "Raftintern", "trashcave"]
 team_tracking_placeholders =["Location","Jurisdiction", "Ownership", "District", "# Vol","Event Length", "Vol Hrs", "Volunteer Names"]
 							
 # generate the a list of strings
@@ -101,7 +102,7 @@ def generate_team_tracking():
 
     # today's raft
     curr_raft_date = get_current_raft_date()
-    todays_raft_df = post_df.query('uid in @raft_users and Category in @all_sources_categories and reg_datetime >= @curr_raft_date')
+    todays_raft_df = post_df.query('uid in @raft_users_today and Category in @all_sources_categories and reg_datetime >= @curr_raft_date')
     todays_raft = get_whiteboard_triplet(todays_raft_df)
     # grand totals
     grand_total_trash_before_raft_df = pre_df.query('Category in @all_sources_categories')
@@ -112,7 +113,10 @@ def generate_team_tracking():
     ]
     # since last raft
     last_raft_date = get_last_raft_date()
-    since_last_raft_df = post_df.query('reg_datetime > @last_raft_date and  Category in @all_sources_categories')
+    # add non-raft users from last raft date
+    non_rafters_on_last_raft_day = post_df.query('reg_datetime == @last_raft_date and Category in @all_sources_categories and not (uid in @raft_users_last_Raft)')
+    all_since_last_raft_day = post_df.query('reg_datetime > @last_raft_date and  Category in @all_sources_categories')
+    since_last_raft_df = pd.concat([non_rafters_on_last_raft_day, all_since_last_raft_day])
     since_last_raft = get_whiteboard_triplet(since_last_raft_df)
     # combine output into team tracking sheet order
     team_tracking =  (['Event #', date_name_cell_val()]
