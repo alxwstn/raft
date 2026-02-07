@@ -124,7 +124,8 @@ def generate_team_tracking():
             'todays_raft_df': todays_raft_df,
             'grand_total_trash_before_raft_df': grand_total_trash_before_raft_df,
             'grand_total_trash_after_raft_df': grand_total_trash_after_raft_df,
-            'since_last_raft_df': since_last_raft_df
+            'since_last_raft_df': since_last_raft_df,
+            'since_and_including_last_raft': post_df.query('reg_datetime >= @last_raft_date and Category in @all_sources_categories')
         }
     }
 
