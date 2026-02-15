@@ -1,8 +1,32 @@
 # path to project folder C:\Users\alexw\GIS\QGIS\SDPRF
-import os
-from qgis.core import *
+# How to run windows:
+# C:/Users/alexw/AppData/Local/Programs/OSGeo4W/apps/Python312/python.exe qgis_join.py
+prefix_path = 'C:/Users/alexw/AppData/Local/Programs/OSGeo4W/apps/qgis'
+# How to run on windows: C:/Users/alexw/AppData/Local/Programs/OSGeo4W/apps/Python312/python.exe qgis_join.py 
+import os, sys
+# Append QGIS Python library and plugins to python search path
+sys.path.append(prefix_path + '/python')
+sys.path.append(prefix_path + '/python/plugins')
 
-QgsProject.instance().removeAllMapLayers()
+# Try the import
+from qgis.core import *
+print('qgis bootstrap successful!')
+
+# Supply path to qgis install location
+QgsApplication.setPrefixPath(prefix_path, True)
+
+# # Create a reference to the QgsApplication.  Setting the
+# # second argument to False disables the GUI.
+qgs = QgsApplication([], False)
+
+# # Load providers
+qgs.initQgis()
+
+import processing
+from processing.core.Processing import Processing
+Processing.initialize()
+print('processing bootstrap successful!')
+
 parcel_uri = "C:/Users/alexw/GIS/QGIS/SDPRF/River Parcels/ParcelUpdate1124.shp"
 mappler_csv_uri = "C:/Users/alexw/GIS/QGIS/SDPRF/Mappler CSVs/sandiegorivertrash_data(2025-12-19).csv"
 if os.path.exists(parcel_uri):
@@ -26,7 +50,7 @@ output = processing.run("native:joinattributesbylocation",{
     })
 vlayer_join = output['OUTPUT']
 output_uri = "C:/Users/alexw/GIS/QGIS/SDPRF/Trash Joins/mmdd_table_AW.csv"
-# QgsProject.instance().addMapLayer(vlayer_join)
+
 QgsVectorFileWriter.writeAsVectorFormat(vlayer_join, output_uri ,'utf-8', driverName="CSV")
 print("output saved to {}".format(output_uri))
 
