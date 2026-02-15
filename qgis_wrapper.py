@@ -7,7 +7,8 @@ from config import config
 def run_qgis():
     output = ""
     try:
-        output = subprocess.run(config['qgis_cli_cmd'], check=True, capture_output=True)
-    except:
+        output = subprocess.run([config['qgis_cli_cmd'], 'qgis_join.py'], check=True, capture_output=True)
+    except Exception as e:
+        logging.error(e)
         logging.error("call to QGIS failed")
         logging.error(output)

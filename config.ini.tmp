@@ -13,7 +13,7 @@
     qgis_prefix_path = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/qgis
     qgis_python_path = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/qgis/python
     qgis_plugin_path = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/qgis/python/plugins
-    qgis_cli_cmd = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/Python312/python.exe qgis_join.py
+    qgis_cli_cmd = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/Python312/python.exe
 
     # google auth
     SCOPES = https://www.googleapis.com/auth/drive.readonly
