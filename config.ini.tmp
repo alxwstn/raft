@@ -9,6 +9,12 @@
     current_raft_date = 2026-01-16
     last_raft_date = 2026-01-14
     initials = AWW
+    # QGIS config
+    qgis_prefix_path = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/qgis
+    qgis_python_path = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/qgis/python
+    qgis_plugin_path = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/qgis/python/plugins
+    qgis_cli_cmd = C:/Users/x/AppData/Local/Programs/OSGeo4W/apps/Python312/python.exe qgis_join.py
+
     # google auth
     SCOPES = https://www.googleapis.com/auth/drive.readonly
     CREDENTIALS_FILE = credentials.json

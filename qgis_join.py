@@ -1,15 +1,16 @@
 # How to run windows:
 # C:/Users/alexw/AppData/Local/Programs/OSGeo4W/apps/Python312/python.exe qgis_join.py
-prefix_path = 'C:/Users/alexw/AppData/Local/Programs/OSGeo4W/apps/qgis'
-import os, sys, pathlib
+import os, sys, pathlib, logging
+from config import get_current_raft_date, config
 
+prefix_path = config['qgis_prefix_path']
 # Append QGIS Python library and plugins to python search path
-sys.path.append(prefix_path + '/python')
-sys.path.append(prefix_path + '/python/plugins')
+sys.path.append(config['qgis_python_path'])
+sys.path.append(config['qgis_plugin_path'])
 
 # import qgis
 from qgis.core import *
-print('qgis bootstrap successful!')
+logging.info('qgis bootstrap successful!')
 
 # Supply path to qgis install location
 QgsApplication.setPrefixPath(prefix_path, True)
@@ -25,19 +26,19 @@ qgs.initQgis()
 import processing
 from processing.core.Processing import Processing
 Processing.initialize()
-print('processing bootstrap successful!')
+logging.info('processing plugin bootstrap successful!')
 
 # Begin trash join
 project_uri = pathlib.Path(__file__).parent.resolve()
 parcel_uri = os.path.join(project_uri, "templates", "river_parcels","ParcelUpdate1124.shp")
 mappler_csv_uri = os.path.join(project_uri, "output", "Mappler.csv")
-output_uri = os.path.join(project_uri, "output", "mmdd_table_AW.csv")
+output_uri = os.path.join(project_uri, "output", get_current_raft_date().strftime('%m%d_table_AW.csv'))
 
 if os.path.exists(parcel_uri):
     vlayer_parcels = QgsVectorLayer(parcel_uri, "SDRPF_Parcels", "ogr")
     QgsProject.instance().addMapLayer(vlayer_parcels)
 else:
-    print("Oh no. Parcel file path invalid. Please recheck and try again")
+    logging.error("Oh no. Parcel file path invalid. Please recheck and try again")
     sys.exit(1)
     
 if os.path.exists(mappler_csv_uri):
@@ -45,7 +46,7 @@ if os.path.exists(mappler_csv_uri):
     vlayer_pins = QgsVectorLayer(mappler_csv_uri, "Trash_Pins", "delimitedtext")
     QgsProject.instance().addMapLayer(vlayer_pins)
 else:
-    print("Oh no. Parcel file path invalid. Please recheck and try again")
+    logging.error("Oh no. CSV file path invalid. Please recheck and try again")
     sys.exit(1)
 
 # http://gis.stackexchange.com/questions/133537/loading-csv-data-table-as-vector-layer-using-pyqgis
@@ -58,7 +59,7 @@ output = processing.run("native:joinattributesbylocation",{
 vlayer_join = output['OUTPUT']
 
 QgsVectorFileWriter.writeAsVectorFormat(vlayer_join, output_uri ,'utf-8', driverName="CSV")
-print("output saved to {}".format(output_uri))
+logging.info("output saved to {}".format(output_uri))
 # End trash join
 
 # Finally, exitQgis() is called to remove the

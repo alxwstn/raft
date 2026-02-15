@@ -1,5 +1,6 @@
 from jinja2 import Environment, FileSystemLoader
 from config import config
+from raft_data import get_postraft_df
 import logging
 
 
@@ -49,4 +50,6 @@ def format_raft_html(raft_spreadsheet_data):
     with open("output/RAFT_spreadsheet_analysis.html", "w") as f:
         f.write(html)
 
-# 1&#9;2&#9;3&#9;4&#9;5&#9;6
+def format_mappler_csv():
+    mappler_df = get_postraft_df()
+    mappler_df.to_csv('output/Mappler.csv',index=False)
