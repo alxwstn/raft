@@ -1,6 +1,9 @@
 # RAFT analysis
 
-Automates the RAFT whiteboard tracking and team tracking spreadsheet analysis as documented here:
+Automates the RAFT manual data flows. Note that this is a proof of concept that runs on a personal machine. This POC
+shows that the manual spreadsheet workflow utilized by RAFT interns could be automated if there was desire to do so in the future.
+
+Implements whiteboard tracking and team tracking spreadsheet analysis as documented here:
 - [How to Update Whiteboard Totals](https://docs.google.com/document/d/1vbx5byVoYNURoynHmWhI8mvFU21mnZV_)
 - [How to update Team Tracking Totals](https://docs.google.com/document/d/1J0R-ZWudCTxEuxFDn_6jt01F-qXJzaGC1krsJKIcAW8)
 
